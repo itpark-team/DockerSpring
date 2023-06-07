@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx
+    restart: always
+    volumes:
+      - ./nginxapp:/etc/nginx/conf.d
+    ports:
+      - "80:80"
+
+  postgres:
+    image: postgres:13.3
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "postgres"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./dbdata:/var/lib/postgresql/data
+      - ./dbroot:/root
+      - ./dbroot/init.sql:/docker-entrypoint-initdb.d/db.sql
+    ports:
+      - "28432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U postgres -d postgres'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: ./springapp
+    restart: unless-stopped
+    depends_on:
+      - nginx
+      - postgres
+    command: sh -c "java -jar app2.jar"
+    volumes:
+      - ./springapp:/root
