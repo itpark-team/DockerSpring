@@ -21,8 +21,6 @@ services:
       - ./dbdata:/var/lib/postgresql/data
       - ./dbroot:/root
       - ./dbroot/init.sql:/docker-entrypoint-initdb.d/db.sql
-    ports:
-      - "28432:5432"
     healthcheck:
       test: ["CMD-SHELL", "sh -c 'pg_isready -U postgres -d postgres'"]
       interval: 10s
